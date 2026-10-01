@@ -45,11 +45,7 @@ npm start
 
 ## Deployment
 
-The site is hosted on [Netlify](https://www.netlify.com/), which serves the `public` directory (see `netlify.toml`). There's no build step; `npm test` runs as the build command, so a failing test blocks the deploy.
-
-```bash
-npx netlify-cli deploy --prod
-```
+The site is hosted on [Netlify](https://www.netlify.com/), which serves the `public` directory (see `netlify.toml`). Every push to `main` deploys to production. There's no build step; `npm test` runs as the build command, so a failing test blocks the deploy.
 
 ## Usage
 
