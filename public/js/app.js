@@ -1,7 +1,8 @@
 import {
-    ROWS, LENGTH, createBoard, activeRow, blockingRow, typeLetter, deleteLetter, cycleColor, removeRow, fillWord,
-    guesses, isSolved, keyboardColors, localDate, serializeBoard, restoreBoard,
+    ROWS, LENGTH, createBoard, activeRow, blockingRow, typeLetter, deleteLetter, cycleColor, setColors, removeRow,
+    fillWord, guesses, isSolved, keyboardColors, localDate, serializeBoard, restoreBoard,
 } from './board.js';
+import { certainColors } from './wordle.js';
 
 const BOARD_KEY = 'wordle-wizard-board';
 const SETTINGS_KEY = 'wordle-wizard-settings';
@@ -71,6 +72,8 @@ let board = restoreBoard(load(BOARD_KEY), localDate());
 let settings = readSettings();
 let words = null;        // accepted words, sent by the worker once the data loads
 let results = null;      // the latest solve() results
+let resultsKey = null;   // the guesses those results are for
+let requestedKey = null;
 let requestId = 0;
 let listVersion = 0;
 let slowTimer = null;
@@ -166,9 +169,20 @@ function shakeRow(index) {
 
 // Actions
 
+// Colors the tiles of `rowIndex` whose color is certain from the current results (e.g. a letter
+// already green in that spot), leaving the rest for the player. Skipped if results are out of date.
+function applyKnownColors(next, rowIndex) {
+    if (!results || resultsKey !== JSON.stringify(guesses(board, isWord)) || results.likely.length === 0) {
+        return next;
+    }
+    const row = next[rowIndex];
+    const known = certainColors(row.letters, results.likely.map(({ word }) => word));
+    return setColors(next, rowIndex, row.colors.map((color, i) => (color === 'gray' && known[i] ? known[i] : color)));
+}
+
 function type(letter) {
     const index = activeRow(board);
-    const next = typeLetter(board, letter, isWord);
+    let next = typeLetter(board, letter, isWord);
     if (next === board) {
         const blocked = blockingRow(board, isWord);
         if (blocked !== -1) {
@@ -176,6 +190,9 @@ function type(letter) {
             shakeRow(blocked);
         }
         return;
+    }
+    if (next[index].letters.length === LENGTH && isWord(next[index].letters)) {
+        next = applyKnownColors(next, index);
     }
     update(next);
 
@@ -263,6 +280,7 @@ worker.addEventListener('message', ({ data }) => {
         clearTimeout(slowTimer);
         document.body.classList.remove('computing');
         results = data.results;
+        resultsKey = requestedKey;
         renderResults();
     } else if (data.type === 'error') {
         showLoadError();
@@ -276,7 +294,9 @@ function requestResults() {
         return;
     }
     requestId++;
-    worker.postMessage({ type: 'solve', id: requestId, guesses: guesses(board, isWord) });
+    const counted = guesses(board, isWord);
+    requestedKey = JSON.stringify(counted);
+    worker.postMessage({ type: 'solve', id: requestId, guesses: counted });
     clearTimeout(slowTimer);
     slowTimer = setTimeout(() => document.body.classList.add('computing'), SLOW_MS);
 }
@@ -298,8 +318,19 @@ function formatRemaining(remaining) {
     return remaining < 10 ? remaining.toFixed(1) : Math.round(remaining).toLocaleString();
 }
 
+// When no word fits every row, the suggestions shown come from the rows before the one that doesn't fit
+function contradictionHint() {
+    const { contradiction } = results;
+    if (contradiction === guesses(board, isWord).length - 1) {
+        return `Tap row ${contradiction + 1}'s letters to match Wordle's colors.`;
+    }
+    return contradiction === 0
+        ? 'No words fit row 1. Check its colors.'
+        : `No words fit. Row ${contradiction + 1} contradicts the earlier rows. Check its colors.`;
+}
+
 function renderBest() {
-    const { count, likely, best } = results;
+    const { count, likely, best, contradiction } = results;
     const counted = guesses(board, isWord);
 
     if (isSolved(board, isWord)) {
@@ -307,10 +338,12 @@ function renderBest() {
         elements.bestDetail.textContent = `Solved in ${counted.length}!`;
     } else if (!best) {
         elements.bestWord.innerHTML = '&nbsp;';
-        elements.bestDetail.textContent = 'Fix the colors to get a suggestion.';
+        elements.bestDetail.textContent = contradiction !== -1 ? contradictionHint() : 'Fix the colors to get a suggestion.';
     } else {
         elements.bestWord.textContent = best.word;
-        if (counted.length === 0) {
+        if (contradiction !== -1) {
+            elements.bestDetail.textContent = contradictionHint();
+        } else if (counted.length === 0) {
             elements.bestDetail.textContent = `Strong opener: ${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`;
         } else if (count === 1) {
             elements.bestDetail.textContent = 'This is the only word left.';
@@ -324,8 +357,16 @@ function renderBest() {
     renderMoreGuesses();
 }
 
+// Puts a suggestion on the board with the colors that are already certain
+function fillSuggestion(word) {
+    const blocked = blockingRow(board, isWord);
+    const index = blocked !== -1 ? blocked : activeRow(board);
+    const next = fillWord(board, word, isWord);
+    update(next === board ? next : applyKnownColors(next, index));
+}
+
 function useWord(word, list, position) {
-    update(fillWord(board, word, isWord));
+    fillSuggestion(word);
     track('suggestion_clicked', { list, position });
 }
 
@@ -370,21 +411,14 @@ function renderLikely() {
     elements.likelyList.replaceChildren();
     elements.showAll.hidden = true;
 
-    if (guesses(board, isWord).length === 0) {
+    if (likely.length === 0) {
         elements.likelyCount.textContent = '';
-        elements.likelyMessage.textContent = 'Type your first guess to see likely answers.';
-        return;
-    }
-    if (count === 0) {
-        elements.likelyCount.textContent = '(0)';
-        elements.likelyMessage.textContent = contradiction === 0
-            ? 'No words fit row 1. Check its colors.'
-            : `No words fit. Row ${contradiction + 1} contradicts the earlier rows. Check its colors.`;
+        elements.likelyMessage.textContent = contradiction !== -1 ? contradictionHint() : 'Type your first guess to see likely answers.';
         return;
     }
 
     elements.likelyCount.textContent = `(${count.toLocaleString()})`;
-    elements.likelyMessage.textContent = '';
+    elements.likelyMessage.textContent = contradiction !== -1 ? contradictionHint() : '';
     elements.likelyList.append(...likely.slice(0, LIKELY_PREVIEW).map(likelyItem));
     if (count > LIKELY_PREVIEW) {
         elements.showAll.textContent = `Show all ${count.toLocaleString()}`;
@@ -414,8 +448,8 @@ function renderResults() {
     renderBest();
     renderLikely();
     if (guesses(board, isWord).length > 0) {
-        elements.liveSummary.textContent = results.count === 0
-            ? elements.likelyMessage.textContent
+        elements.liveSummary.textContent = results.contradiction !== -1 || !results.best
+            ? elements.bestDetail.textContent
             : `${results.count.toLocaleString()} words left. Best guess: ${results.best.word.toUpperCase()}.`;
     }
 }
@@ -458,7 +492,7 @@ $('settings-button').addEventListener('click', event => openDialog($('settings-d
 $('new-game').addEventListener('click', () => update(createBoard()));
 elements.useBest.addEventListener('click', () => {
     if (results?.best) {
-        update(fillWord(board, results.best.word, isWord));
+        fillSuggestion(results.best.word);
         track('best_guess_used', { guess_number: guesses(board, isWord).length });
     }
 });

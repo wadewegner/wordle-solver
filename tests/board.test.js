@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-    ROWS, createBoard, activeRow, blockingRow, typeLetter, deleteLetter, cycleColor, removeRow, fillWord,
+    ROWS, createBoard, activeRow, blockingRow, typeLetter, deleteLetter, cycleColor, setColors, removeRow, fillWord,
     guesses, isSolved, keyboardColors, localDate, serializeBoard, restoreBoard,
 } from '../public/js/board.js';
 
@@ -62,6 +62,11 @@ test('guesses counts only full rows holding accepted words', () => {
     board = cycleColor(board, 0, 1);
     assert.deepEqual(guesses(board, isWord), [{ word: 'crane', colors: ['gray', 'yellow', 'gray', 'gray', 'gray'] }]);
     assert.deepEqual(guesses(typeWord(createBoard(), 'zzzzz'), isWord), []);
+});
+
+test('setColors sets a whole row\'s colors', () => {
+    const board = setColors(typeWord(createBoard(), 'crane'), 0, ['gray', 'yellow', 'gray', 'gray', 'green']);
+    assert.deepEqual(board[0].colors, ['gray', 'yellow', 'gray', 'gray', 'green']);
 });
 
 test('removeRow removes a full row and shifts later rows up', () => {

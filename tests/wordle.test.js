@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    ALL_GREEN, scorePattern, encodeColors, decodePattern, filterCandidates, findContradiction,
+    ALL_GREEN, scorePattern, encodeColors, decodePattern, filterCandidates, findContradiction, certainColors,
 } from '../public/js/wordle.js';
 
 const words = readFileSync(new URL('../public/data/words.txt', import.meta.url), 'utf8').trim().split(' ');
@@ -128,4 +128,15 @@ test('findContradiction names the first row after which nothing fits', () => {
 test('findContradiction catches a pattern Wordle can never show', () => {
     // The first E would be marked yellow before the second, so this row is impossible
     assert.equal(findContradiction(words, [row('speed', '...y.')]), 0);
+});
+
+test('certainColors marks only colors every remaining answer agrees on', () => {
+    // After TARSE and WHILE both end in a green E, DUNCE's E is certain to be green
+    const candidates = filterCandidates(words, [row('tarse', '....g'), row('while', '....g')]);
+    const certain = certainColors('dunce', candidates);
+    assert.equal(certain[4], 'green');
+    assert.ok(certain.slice(0, 4).every(color => color === null), certain.join());
+    // A letter already ruled out is certain to be gray
+    assert.equal(certainColors('stone', candidates)[0], 'gray');
+    assert.deepEqual(certainColors('crane', ['crane']), Array(5).fill('green'));
 });

@@ -88,10 +88,14 @@ test('solve with no rows returns the opening guesses', () => {
     assert.deepEqual(solve(lexicon, [], { opening }), { count: 14855, likely: [], best: opening[0], guesses: opening, contradiction: -1 });
 });
 
-test('solve reports a contradiction when nothing fits', () => {
-    const result = solve(lexicon, [row('crane', 'ggggg'), row('slate', 'ggggg')]);
-    assert.deepEqual(result, { count: 0, likely: [], best: null, guesses: [], contradiction: 1 });
-    assert.equal(solve(lexicon, [row('speed', '...y.')]).contradiction, 0);
+test('solve reports a contradiction and keeps the suggestions from the rows before it', () => {
+    const before = solve(lexicon, [row('crane', '.y...')]);
+    const result = solve(lexicon, [row('crane', '.y...'), row('slate', 'ggggg'), row('pious', 'ggggg')]);
+    assert.equal(result.contradiction, 1);
+    assert.deepEqual({ ...result, contradiction: -1 }, before);
+
+    const opening = [{ word: 'raise', expectedRemaining: 342, goForWin: false }];
+    assert.deepEqual(solve(lexicon, [row('speed', '...y.')], { opening }), { ...solve(lexicon, [], { opening }), contradiction: 0 });
 });
 
 test('solve returns every candidate ranked, with a best guess', () => {

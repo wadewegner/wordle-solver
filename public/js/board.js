@@ -67,6 +67,10 @@ export function cycleColor(board, rowIndex, position) {
     return replaceRow(board, rowIndex, { ...row, colors });
 }
 
+export function setColors(board, rowIndex, colors) {
+    return replaceRow(board, rowIndex, { ...board[rowIndex], colors: [...colors] });
+}
+
 // Removes a full row; later rows move up and an empty row is added at the bottom
 export function removeRow(board, rowIndex) {
     if (board[rowIndex]?.letters.length !== LENGTH) {

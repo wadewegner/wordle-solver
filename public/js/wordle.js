@@ -68,3 +68,13 @@ export function findContradiction(words, rows) {
     }
     return -1;
 }
+
+// For each letter of `guess`, the color Wordle is certain to show (the same for every remaining
+// candidate), or null when it depends on the answer
+export function certainColors(guess, candidates) {
+    const seen = Array.from({ length: 5 }, () => new Set());
+    for (const candidate of candidates) {
+        decodePattern(scorePattern(guess, candidate)).forEach((color, i) => seen[i].add(color));
+    }
+    return seen.map(colors => (colors.size === 1 ? [...colors][0] : null));
+}
