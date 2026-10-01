@@ -70,10 +70,13 @@
             <span class="wordmark">Wordle Wizard</span>
         </a>
         <div class="header-actions">
-            <button type="button" class="icon-button" id="help-button" aria-label="How it works">
+            <button type="button" class="icon-button" id="new-game" aria-label="New game" title="New game">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="icon-button" id="help-button" aria-label="How it works" title="How it works">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.8-2.5 2.2-2.5 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.2" fill="currentColor"/></svg>
             </button>
-            <button type="button" class="icon-button" id="settings-button" aria-label="Settings">
+            <button type="button" class="icon-button" id="settings-button" aria-label="Settings" title="Settings">
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
             </button>
         </div>
@@ -86,7 +89,6 @@
         <section class="board-area" aria-label="Your guesses">
             <div id="board" class="board"></div>
             <p id="board-message" class="board-message" role="status"></p>
-            <button type="button" id="new-game" class="text-button">New game</button>
         </section>
 
         <div id="keyboard" class="keyboard" role="group" aria-label="Keyboard"></div>
@@ -98,11 +100,12 @@
             <p id="best-word" class="best-word">&nbsp;</p>
             <p id="best-detail" class="best-detail">Loading the word list…</p>
             <button type="button" id="use-best" class="primary-button" disabled>Use this word</button>
+            <div id="more-guesses" class="more-guesses" role="group" aria-label="Other strong guesses"></div>
         </section>
 
         <section class="card likely" aria-labelledby="likely-heading">
             <h2 id="likely-heading">Likely answers <span id="likely-count"></span></h2>
-            <p id="likely-message" class="likely-message">Enter your first guess to see likely answers.</p>
+            <p id="likely-message" class="likely-message">Type your first guess to see likely answers.</p>
             <ol id="likely-list" class="likely-list"></ol>
             <button type="button" id="show-all" class="text-button" hidden></button>
         </section>
@@ -115,11 +118,11 @@
         <h2 id="faq-title">How Wordle Wizard works</h2>
         <details open>
             <summary>How do I use it?</summary>
-            <p>Play your guess in Wordle, then type the same word here and press Enter. Tap each letter until it shows the color Wordle gave it: gray for letters not in the word, yellow for letters in the word but in the wrong spot, and green for letters in the right spot. Wordle Wizard updates its suggestions as soon as the colors change.</p>
+            <p>Play your guess in Wordle, then type the same word here. Tap each letter until it shows the color Wordle gave it: gray for letters not in the word, yellow for letters in the word but in the wrong spot, and green for letters in the right spot. Suggestions update as you type and tap.</p>
         </details>
         <details>
             <summary>What does the best next guess mean?</summary>
-            <p>It's the word expected to rule out the most possible answers, whatever colors Wordle shows you. Wordle Wizard tries thousands of guesses against every answer that's still possible and picks the one that splits them most evenly, then shows how many answers you can expect to have left. When one answer is very likely, it suggests going for the win instead.</p>
+            <p>It's the possible answer expected to rule out the most of the others, whatever colors Wordle shows you. Wordle Wizard tries each likely answer against every word that's still possible and picks the one that splits them most evenly, then shows how many words you can expect to have left. The chips next to it are the runners-up. When one answer is very likely, it suggests going for the win.</p>
         </details>
         <details>
             <summary>How are likely answers ranked?</summary>
@@ -127,7 +130,7 @@
         </details>
         <details>
             <summary>Does it work with hard mode?</summary>
-            <p>Yes. Turn on hard mode in settings and every suggested guess will keep your green letters in place and use every yellow letter, as Wordle's hard mode requires.</p>
+            <p>Yes. Every suggestion is a word that could still be the answer, so it always keeps your green letters in place and uses your yellow letters, as Wordle's hard mode requires.</p>
         </details>
         <details>
             <summary>Where do the words come from?</summary>
@@ -151,14 +154,14 @@
         </form>
         <h2 id="help-title">How it works</h2>
         <ol class="help-steps">
-            <li><strong>Type the word you played in Wordle</strong> and press Enter.</li>
+            <li><strong>Type the word you played in Wordle.</strong> Keep typing and the next guess starts on the next row.</li>
             <li><strong>Tap each letter until it matches Wordle's colors:</strong>
                 <span class="mini-tile" data-color="gray">A</span> not in the word,
                 <span class="mini-tile" data-color="yellow">B</span> in the word but in the wrong spot,
                 <span class="mini-tile" data-color="green">C</span> in the right spot.</li>
-            <li><strong>Check the suggestions.</strong> The best next guess narrows down the possible answers fastest. Likely answers are ranked by how likely each one is to be today's word.</li>
+            <li><strong>Check the suggestions.</strong> They update as you type and tap. The best next guess narrows down the possible answers fastest, and likely answers are ranked by how likely each one is to be today's word.</li>
         </ol>
-        <p>Tap any suggestion to add it to the board. If you play Wordle on hard mode, turn it on in settings.</p>
+        <p>Tap any suggestion to add it to the board. Every suggestion could still be the answer, so they work in hard mode too.</p>
     </dialog>
 
     <dialog id="settings-dialog" aria-labelledby="settings-title">
@@ -168,10 +171,6 @@
             </button>
         </form>
         <h2 id="settings-title">Settings</h2>
-        <label class="setting">
-            <span><strong>Hard mode</strong><small>Best guesses reuse every green and yellow letter, as Wordle's hard mode requires.</small></span>
-            <input type="checkbox" id="hard-mode">
-        </label>
         <label class="setting">
             <span><strong>Theme</strong></span>
             <select id="theme">

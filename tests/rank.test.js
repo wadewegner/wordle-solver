@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { encodeColors, satisfiesHardMode } from '../public/js/wordle.js';
-import { buildLexicon, rankAnswers, bestGuess, solve, TIER_WEIGHTS } from '../public/js/rank.js';
+import { encodeColors, filterCandidates } from '../public/js/wordle.js';
+import { buildLexicon, rankAnswers, bestGuess, topGuesses, solve, TIER_WEIGHTS, TOP_GUESSES } from '../public/js/rank.js';
 import { loadLexicon } from '../scripts/load-lexicon.js';
 
 const lexicon = loadLexicon();
@@ -50,21 +50,47 @@ test('bestGuess picks an accepted word that narrows things down, deterministical
     assert.deepEqual(bestGuess(candidates, lexicon, { rows }), best);
 });
 
-test('bestGuess obeys hard mode', () => {
-    const rows = [row('crane', 'g...y')];
-    const candidates = solve(lexicon, rows).likely.map(entry => entry.word);
-    const best = bestGuess(candidates, lexicon, { rows, hardMode: true });
-    assert.ok(satisfiesHardMode(best.word, rows), best.word);
+test('suggestions are always words that could be the answer', () => {
+    // E is green in the last spot, so FOUND tests new letters but can't be the answer
+    const rows = [row('tarse', '....g'), row('while', '....g')];
+    const candidates = filterCandidates(lexicon.words, rows);
+    const guesses = topGuesses(candidates, lexicon);
+    assert.ok(guesses.length > 0);
+    assert.ok(guesses.every(g => candidates.includes(g.word)), guesses.map(g => g.word).join());
+    assert.ok(!guesses.some(g => g.word === 'found'));
 });
 
-test('solve with no rows returns the opening guess', () => {
-    const opening = { word: 'slate', expectedRemaining: 100, goForWin: false };
-    assert.deepEqual(solve(lexicon, [], { opening }), { count: 14855, likely: [], best: opening, contradiction: -1 });
+test('suggestions come from the original answers while any remain', () => {
+    // Without this, proper nouns and rare words like ALLAN, MOANA and LIANA were suggested here
+    const rows = [row('tarse', '.y...')];
+    const guesses = topGuesses(filterCandidates(lexicon.words, rows), lexicon);
+    assert.ok(guesses.every(g => lexicon.weight.get(g.word) === TIER_WEIGHTS.original), guesses.map(g => g.word).join());
+});
+
+test('topGuesses returns the ten strongest distinct guesses, best first', () => {
+    const rows = [row('crane', '.....')];
+    const candidates = solve(lexicon, rows).likely.map(entry => entry.word);
+    const guesses = topGuesses(candidates, lexicon, { rows });
+    assert.equal(guesses.length, TOP_GUESSES);
+    assert.equal(new Set(guesses.map(g => g.word)).size, TOP_GUESSES);
+    assert.deepEqual(guesses[0], bestGuess(candidates, lexicon, { rows }));
+    assert.ok(guesses.every(g => lexicon.weight.has(g.word)));
+});
+
+test('topGuesses lists the likeliest answers when going for the win', () => {
+    const guesses = topGuesses(['under', 'udder'], lexicon);
+    assert.equal(guesses.length, 2);
+    assert.ok(guesses.every(g => g.goForWin));
+});
+
+test('solve with no rows returns the opening guesses', () => {
+    const opening = [{ word: 'slate', expectedRemaining: 100, goForWin: false }, { word: 'crane', expectedRemaining: 110, goForWin: false }];
+    assert.deepEqual(solve(lexicon, [], { opening }), { count: 14855, likely: [], best: opening[0], guesses: opening, contradiction: -1 });
 });
 
 test('solve reports a contradiction when nothing fits', () => {
     const result = solve(lexicon, [row('crane', 'ggggg'), row('slate', 'ggggg')]);
-    assert.deepEqual(result, { count: 0, likely: [], best: null, contradiction: 1 });
+    assert.deepEqual(result, { count: 0, likely: [], best: null, guesses: [], contradiction: 1 });
     assert.equal(solve(lexicon, [row('speed', '...y.')]).contradiction, 0);
 });
 
@@ -74,4 +100,5 @@ test('solve returns every candidate ranked, with a best guess', () => {
     assert.equal(result.likely.length, result.count);
     assert.ok(result.count > 10);
     assert.ok(result.best.word);
+    assert.equal(result.guesses[0], result.best);
 });

@@ -270,3 +270,13 @@ Done during development with Playwright:
 
 - The specific display typeface (OFL) and exact palette values. Chosen during implementation, within the identity above.
 - The Tier B threshold and the tier weights. They start at the values above (a cutoff of 2.0 catches 56 of the 62 past answers that came from outside the original list; 3.0 would catch only 18) and are tuned with the benchmark.
+
+## Changes after the owner's local review (2026-10-01)
+
+These replace the corresponding parts of the design above.
+
+- **Live updates instead of Enter.** Letters fill rows in order, like one 30-letter line. A row counts as soon as it holds a five-letter accepted word, and suggestions update as you type and tap colors. A full row that isn't a word shows "Not in word list" and blocks the next row until fixed. Backspace works across rows. The on-screen Enter key is removed.
+- **Suggestions are always possible answers.** Best guesses come only from the remaining candidates, and only from the likeliest tier still in play (original answers while any remain). There are no information-only guesses like FOUND, and no proper nouns or rare words like MOANA. Hard mode is therefore always satisfied, and the hard-mode setting is removed. Benchmark: 99.22% solved within 6, average 3.62. Opener: RAISE.
+- **Top 10 guesses.** The best guess is shown large, and the next nine appear as "Also strong" chips. Before the first guess, the ten precomputed openers are shown.
+- **Phone layout.** Tiles size to the screen height as well as the width, so the board, best-guess card, chips and keyboard fit on one screen (360×640 and up). The best-guess card is compact on phones, "New game" moved to the header, and "Not in word list" is a pop-up message over the board.
+- **Palette.** Brighter purples, especially in the dark theme.

@@ -68,31 +68,3 @@ export function findContradiction(words, rows) {
     }
     return -1;
 }
-
-// NYT hard mode: green letters stay in place, and every revealed letter (green or yellow) is used
-// at least as many times as it was revealed
-export function satisfiesHardMode(guess, rows) {
-    return rows.every(({ word, pattern }) => {
-        const colors = decodePattern(pattern);
-        const revealed = {};
-        for (let i = 0; i < 5; i++) {
-            if (colors[i] === 'green' && guess[i] !== word[i]) {
-                return false;
-            }
-            if (colors[i] !== 'gray') {
-                revealed[word[i]] = (revealed[word[i]] ?? 0) + 1;
-            }
-        }
-        return Object.entries(revealed).every(([letter, count]) => countLetter(guess, letter) >= count);
-    });
-}
-
-function countLetter(word, letter) {
-    let count = 0;
-    for (const character of word) {
-        if (character === letter) {
-            count++;
-        }
-    }
-    return count;
-}

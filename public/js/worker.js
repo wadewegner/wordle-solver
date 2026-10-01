@@ -14,7 +14,7 @@ const lines = text => text.split('\n').map(line => line.trim()).filter(Boolean);
 const ready = Promise.all(['words.txt', 'original-answers.txt', 'common.txt', 'opening.json'].map(fetchText))
     .then(([words, original, common, opening]) => ({
         lexicon: buildLexicon(words.trim().split(' '), lines(original), lines(common)),
-        opening: JSON.parse(opening),
+        opening: JSON.parse(opening).guesses,
     }));
 
 ready.then(
@@ -41,7 +41,7 @@ async function solvePending() {
     try {
         const { lexicon, opening } = await ready;
         const rows = request.guesses.map(({ word, colors }) => ({ word, pattern: encodeColors(colors) }));
-        const results = solve(lexicon, rows, { hardMode: request.hardMode, opening });
+        const results = solve(lexicon, rows, { opening });
         self.postMessage({ type: 'results', id: request.id, results });
     } catch (error) {
         self.postMessage({ type: 'error', message: String(error) });

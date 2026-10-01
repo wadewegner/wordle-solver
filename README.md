@@ -6,10 +6,10 @@ Wordle Wizard helps you solve the daily NYT Wordle. Enter the guesses you've pla
 
 ## Features
 
-- Enter each Wordle guess and tap its letters to match Wordle's colors (gray, yellow, green).
-- **Best next guess:** the word expected to rule out the most possible answers, with how many you can expect to have left.
+- Type each Wordle guess and tap its letters to match Wordle's colors (gray, yellow, green). Suggestions update as you go.
+- **Best next guesses:** the ten possible answers expected to rule out the most of the others, best first.
 - **Likely answers:** every remaining word, ranked by how likely NYT is to pick it.
-- Hard mode, light and dark themes, a high-contrast option, and a board that's saved until the next puzzle.
+- Suggestions are always possible answers, so they work in hard mode. Light and dark themes, a high-contrast option, and a board that's saved until the next puzzle.
 
 ## How it works
 
@@ -24,7 +24,7 @@ The solver lives in `public/js/` and runs in a Web Worker:
 ```bash
 npm test            # unit tests (also the Netlify build command)
 npm start           # serve the site at http://localhost:3000
-npm run benchmark   # play every past NYT answer (-- --hard for hard mode, -- --limit N)
+npm run benchmark   # play every past NYT answer (-- --limit N for a quick run)
 ```
 
 Regenerating data:

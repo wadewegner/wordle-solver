@@ -103,32 +103,6 @@ a { color: var(--brand); }
 
 .header-actions { display: flex; gap: 0.25rem; }
 
-@media (max-width: 400px) {
-    .wordmark { font-size: 1.1rem; }
-}
-
-@media (max-width: 340px) {
-    .site-header { gap: 0.5rem; }
-    .brand img { width: 32px; height: 42px; }
-    .wordmark { font-size: 0.95rem; }
-}
-
-.icon-button {
-    display: grid;
-    place-items: center;
-    width: 44px;
-    height: 44px;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
-    color: var(--ink);
-    cursor: pointer;
-}
-
-.icon-button:hover { background: var(--surface-2); }
-.icon-button svg { width: 24px; height: 24px; }
-
 /* Layout: one column on phones, board and keyboard beside the suggestions on desktop */
 
 .app {
@@ -170,16 +144,18 @@ a { color: var(--brand); }
 /* Board */
 
 .board-area {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
     container-type: inline-size;
 }
 
 .board {
-    /* 5 tiles, 5 gaps and the 32px remove button fit the board area's width */
-    --tile: min(62px, calc((100cqw - 62px) / 5));
+    /* Tiles fit the board area's width (5 tiles, the remove buttons and a matching spacer, so the
+       tiles stay centered) and the screen's height, leaving room for everything in --chrome */
+    --chrome: 330px;
+    --tile: clamp(36px, min(calc((100cqw - 92px) / 5), calc((100dvh - var(--chrome)) / 6)), 62px);
     display: grid;
     gap: 6px;
     /* Reserve the board's space before app.js draws it, so nothing below shifts */
@@ -188,10 +164,13 @@ a { color: var(--brand); }
 
 .board-row {
     display: grid;
-    grid-template-columns: repeat(5, var(--tile)) 32px;
+    grid-template-columns: 28px repeat(5, var(--tile)) 28px;
     align-items: center;
     gap: 6px;
 }
+
+/* Balances the remove button on the right so the tiles are centered */
+.board-row::before { content: ''; }
 
 .tile {
     display: grid;
@@ -228,8 +207,8 @@ a { color: var(--brand); }
 .remove-row {
     display: grid;
     place-items: center;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border: 0;
     border-radius: 50%;
@@ -251,14 +230,24 @@ a { color: var(--brand); }
 }
 
 .board-message {
-    min-height: 1.5rem;
-    margin: 0.25rem 0 0;
+    position: absolute;
+    top: 0.75rem;
+    left: 50%;
+    z-index: 1;
+    margin: 0;
+    padding: 0.5rem 0.9rem;
+    border-radius: 8px;
+    background: var(--ink);
+    color: var(--bg);
     font-weight: 600;
-    color: var(--brand-strong);
-    text-align: center;
+    white-space: nowrap;
+    transform: translateX(-50%);
     opacity: 0;
+    pointer-events: none;
     transition: opacity 0.2s;
 }
+
+.board-message:empty { display: none; }
 
 .board-message.visible { opacity: 1; }
 
@@ -374,6 +363,42 @@ a { color: var(--brand); }
 }
 
 .primary-button:disabled { opacity: 0.5; cursor: default; }
+
+.more-guesses {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 0.9rem;
+}
+
+.more-guesses:empty { display: none; }
+
+.more-label {
+    margin-right: 2px;
+    color: var(--muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+.guess-chip {
+    flex: none;
+    min-height: 36px;
+    padding: 0.3rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--ink);
+    font: 600 0.95rem var(--ui);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.guess-chip:hover { border-color: var(--brand); }
 
 .likely-message { margin: 0 0 0.5rem; color: var(--muted); }
 .likely-message:empty { display: none; }
@@ -511,6 +536,71 @@ dialog h2 {
 }
 
 .site-footer a { color: inherit; }
+
+/* Phones: these come last so they override the base rules above */
+
+@media (max-width: 859px) {
+    .site-header { gap: 0.5rem; padding: 0.4rem 0.75rem; }
+    .brand img { width: 32px; height: 42px; }
+    .wordmark { font-size: clamp(0.85rem, 4.2vw, 1.15rem); }
+    .app { gap: 0.6rem; padding-bottom: 1rem; }
+    .board { --chrome: 416px; }
+
+    .best {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            'label button'
+            'word button'
+            'detail detail';
+        align-items: center;
+        column-gap: 0.75rem;
+        padding: 0.6rem 0.9rem;
+    }
+
+    .best { grid-template-areas: 'label button' 'word button' 'detail detail' 'more more'; }
+
+    .more-guesses,
+    .more-guesses:empty {
+        display: flex;
+        grid-area: more;
+        flex-wrap: nowrap;
+        min-height: 36px;
+        margin: 0.4rem -0.9rem 0;
+        padding: 0 0.9rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .more-guesses::-webkit-scrollbar { display: none; }
+
+    .best h2 { grid-area: label; margin: 0; font-size: 0.7rem; }
+    .best-word { grid-area: word; font-size: 1.7rem; }
+    .best-detail { grid-area: detail; min-height: 1.5em; margin: 0.15rem 0 0; font-size: 0.875rem; }
+    #use-best { grid-area: button; }
+}
+
+@media (max-width: 400px) {
+    .header-actions { gap: 0; }
+    .icon-button { width: 36px; height: 36px; }
+}
+
+
+.icon-button {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+}
+
+.icon-button:hover { background: var(--surface-2); }
+.icon-button svg { width: 24px; height: 24px; }
 
 @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after {

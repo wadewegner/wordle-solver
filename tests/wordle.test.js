@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
-    ALL_GREEN, scorePattern, encodeColors, decodePattern, filterCandidates, findContradiction, satisfiesHardMode,
+    ALL_GREEN, scorePattern, encodeColors, decodePattern, filterCandidates, findContradiction,
 } from '../public/js/wordle.js';
 
 const words = readFileSync(new URL('../public/data/words.txt', import.meta.url), 'utf8').trim().split(' ');
@@ -128,20 +128,4 @@ test('findContradiction names the first row after which nothing fits', () => {
 test('findContradiction catches a pattern Wordle can never show', () => {
     // The first E would be marked yellow before the second, so this row is impossible
     assert.equal(findContradiction(words, [row('speed', '...y.')]), 0);
-});
-
-test('satisfiesHardMode requires greens in place and every revealed letter', () => {
-    const crane = [row('crane', 'g...y')];
-    assert.ok(satisfiesHardMode('chess', crane));
-    assert.ok(satisfiesHardMode('cello', crane));
-    assert.ok(!satisfiesHardMode('shelf', crane), 'C must stay first');
-    assert.ok(!satisfiesHardMode('climb', crane), 'E must be used');
-
-    // Two E's and an R revealed, with an E green in the last spot
-    const eerie = [row('eerie', 'y.y.g')];
-    assert.ok(satisfiesHardMode('there', eerie));
-    assert.ok(satisfiesHardMode('three', eerie));
-    assert.ok(satisfiesHardMode('eerie', eerie), 'repeating a guess is allowed');
-    assert.ok(!satisfiesHardMode('outre', eerie), 'needs two E\'s');
-    assert.ok(satisfiesHardMode('crane', []), 'no rows, no constraints');
 });

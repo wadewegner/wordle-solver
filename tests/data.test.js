@@ -44,10 +44,13 @@ test('common.txt is common accepted words outside the original answers', () => {
     }
 });
 
-test('opening.json holds a precomputed opening guess', () => {
-    const opening = JSON.parse(read('opening.json'));
-    assert.ok(accepted.has(opening.word), opening.word);
-    assert.equal(opening.goForWin, false);
-    // Counts every accepted word, obscure ones included, so it's in the hundreds
-    assert.ok(opening.expectedRemaining > 0 && opening.expectedRemaining < 3000);
+test('opening.json holds the precomputed opening guesses', () => {
+    const { guesses } = JSON.parse(read('opening.json'));
+    assert.equal(guesses.length, 10);
+    for (const guess of guesses) {
+        assert.ok(accepted.has(guess.word), guess.word);
+        assert.equal(guess.goForWin, false);
+        // Counts every accepted word, obscure ones included, so it's in the hundreds
+        assert.ok(guess.expectedRemaining > 0 && guess.expectedRemaining < 3000);
+    }
 });

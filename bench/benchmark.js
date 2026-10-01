@@ -1,5 +1,5 @@
 // Plays every past NYT Wordle answer using Wordle Wizard's best guess and reports how it did.
-// Dev-only. Usage: npm run benchmark [-- --hard] [-- --limit N]
+// Dev-only. Usage: npm run benchmark [-- --limit N]
 import { readFileSync } from 'node:fs';
 import { ALL_GREEN, scorePattern } from '../public/js/wordle.js';
 import { solve } from '../public/js/rank.js';
@@ -8,11 +8,10 @@ import { loadLexicon, loadOpening } from '../scripts/load-lexicon.js';
 const MAX_TURNS = 12;
 
 const args = process.argv.slice(2);
-const hardMode = args.includes('--hard');
 const limit = args.includes('--limit') ? Number(args[args.indexOf('--limit') + 1]) : Infinity;
 
 const lexicon = loadLexicon();
-const opening = loadOpening();
+const opening = loadOpening().guesses;
 const answers = JSON.parse(readFileSync(new URL('./past-answers.json', import.meta.url), 'utf8'))
     .map(({ solution }) => solution)
     .slice(0, limit);
@@ -29,7 +28,7 @@ for (const answer of answers) {
     let turns = MAX_TURNS + 1;
     for (let turn = 1; turn <= MAX_TURNS; turn++) {
         const started = performance.now();
-        const { best } = solve(lexicon, rows, { hardMode, opening });
+        const { best } = solve(lexicon, rows, { opening });
         if (rows.length > 0) {
             const elapsed = performance.now() - started;
             searchTime += elapsed;
@@ -51,7 +50,7 @@ for (const answer of answers) {
 }
 
 const solved = answers.length - unsolved.length;
-console.log(`${hardMode ? 'Hard' : 'Normal'} mode, ${answers.length} past answers, opening ${opening.word.toUpperCase()}`);
+console.log(`${answers.length} past answers, opening ${opening[0].word.toUpperCase()}`);
 console.log(`  solved within 6: ${solved}/${answers.length} (${(100 * solved / answers.length).toFixed(2)}%)`);
 console.log(`  average guesses: ${(totalTurns / answers.length).toFixed(3)}`);
 console.log(`  distribution:    ${Object.entries(distribution).map(([turns, count]) => `${turns}:${count}`).join('  ')}`);

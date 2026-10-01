@@ -1,6 +1,6 @@
 import {
-    ROWS, LENGTH, createBoard, activeRow, typeLetter, deleteLetter, submitRow, cycleColor, removeRow, fillWord,
-    submittedGuesses, isSolved, keyboardColors, localDate, serializeBoard, restoreBoard,
+    ROWS, LENGTH, createBoard, activeRow, blockingRow, typeLetter, deleteLetter, cycleColor, removeRow, fillWord,
+    guesses, isSolved, keyboardColors, localDate, serializeBoard, restoreBoard,
 } from './board.js';
 
 const BOARD_KEY = 'wordle-wizard-board';
@@ -9,7 +9,7 @@ const LIKELY_PREVIEW = 10;
 const SHOW_ALL_BATCH = 500;
 const SLOW_MS = 150;
 const MESSAGE_MS = 1500;
-const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', '>zxcvbnm<'];   // > is Enter, < is Backspace
+const KEY_ROWS = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm<'];   // < is Backspace
 
 const ICONS = {
     close: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
@@ -24,12 +24,12 @@ const elements = {
     bestWord: $('best-word'),
     bestDetail: $('best-detail'),
     useBest: $('use-best'),
+    moreGuesses: $('more-guesses'),
     likelyCount: $('likely-count'),
     likelyMessage: $('likely-message'),
     likelyList: $('likely-list'),
     showAll: $('show-all'),
     liveSummary: $('live-summary'),
-    hardMode: $('hard-mode'),
     theme: $('theme'),
     highContrast: $('high-contrast'),
 };
@@ -55,12 +55,11 @@ function readSettings() {
     try {
         const saved = JSON.parse(load(SETTINGS_KEY)) ?? {};
         return {
-            hardMode: saved.hardMode === true,
             theme: ['system', 'light', 'dark'].includes(saved.theme) ? saved.theme : 'system',
             highContrast: saved.highContrast === true,
         };
     } catch {
-        return { hardMode: false, theme: 'system', highContrast: false };
+        return { theme: 'system', highContrast: false };
     }
 }
 
@@ -76,6 +75,9 @@ let requestId = 0;
 let listVersion = 0;
 let slowTimer = null;
 let messageTimer = null;
+
+// Until the word list loads, every full row is treated as a word so typing isn't blocked
+const isWord = word => !words || words.has(word);
 
 const tiles = [];
 const removeButtons = [];
@@ -111,6 +113,7 @@ function buildBoard() {
 function renderBoard() {
     const active = activeRow(board);
     board.forEach((row, r) => {
+        const full = row.letters.length === LENGTH;
         tiles[r].forEach((tile, p) => {
             const letter = row.letters[p] ?? '';
             tile.textContent = letter;
@@ -120,23 +123,25 @@ function renderBoard() {
                 ? `Row ${r + 1}, letter ${p + 1}, ${letter.toUpperCase()}, ${row.colors[p]}`
                 : `Row ${r + 1}, letter ${p + 1}, empty`);
         });
-        tiles[r][0].parentElement.classList.toggle('active', r === active);
-        removeButtons[r].style.visibility = row.submitted ? 'visible' : 'hidden';
+        const rowElement = tiles[r][0].parentElement;
+        rowElement.classList.toggle('active', r === active);
+        rowElement.classList.toggle('invalid', full && !isWord(row.letters));
+        removeButtons[r].style.visibility = full ? 'visible' : 'hidden';
     });
     renderKeyboard();
-    elements.useBest.disabled = active === -1 || !results?.best || isSolved(board);
+    elements.useBest.disabled = active === -1 || !results?.best || isSolved(board, isWord);
 }
 
-// Applies a new board: saves it, redraws it, and asks for new results if the guesses changed
+// Applies a new board: saves it, redraws it, and asks for new results if the counted guesses changed
 function update(next) {
     if (next === board) {
         return;
     }
-    const before = JSON.stringify(submittedGuesses(board));
+    const before = JSON.stringify(guesses(board, isWord));
     board = next;
     save(BOARD_KEY, serializeBoard(board, localDate()));
     renderBoard();
-    if (JSON.stringify(submittedGuesses(board)) !== before) {
+    if (JSON.stringify(guesses(board, isWord)) !== before) {
         requestResults();
     }
 }
@@ -162,28 +167,32 @@ function shakeRow(index) {
 // Actions
 
 function type(letter) {
-    update(typeLetter(board, letter));
+    const index = activeRow(board);
+    const next = typeLetter(board, letter, isWord);
+    if (next === board) {
+        const blocked = blockingRow(board, isWord);
+        if (blocked !== -1) {
+            showMessage('Not in word list');
+            shakeRow(blocked);
+        }
+        return;
+    }
+    update(next);
+
+    // Feedback the moment a row is complete
+    const row = board[index];
+    if (row.letters.length === LENGTH) {
+        if (isWord(row.letters)) {
+            track('guess_entered', { guess_number: index + 1 });
+        } else {
+            showMessage('Not in word list');
+            shakeRow(index);
+        }
+    }
 }
 
 function erase() {
     update(deleteLetter(board));
-}
-
-function submit() {
-    if (!words) {
-        return;
-    }
-    const index = activeRow(board);
-    const { board: next, error } = submitRow(board, word => words.has(word));
-    if (error) {
-        showMessage(error);
-        shakeRow(index);
-        return;
-    }
-    if (next !== board) {
-        update(next);
-        track('guess_entered', { guess_number: index + 1 });
-    }
 }
 
 // Keyboard
@@ -196,11 +205,7 @@ function buildKeyboard() {
             const button = document.createElement('button');
             button.type = 'button';
             button.className = 'key';
-            if (key === '>') {
-                button.textContent = 'Enter';
-                button.classList.add('wide');
-                button.addEventListener('click', submit);
-            } else if (key === '<') {
+            if (key === '<') {
                 button.innerHTML = ICONS.backspace;
                 button.setAttribute('aria-label', 'Backspace');
                 button.classList.add('wide');
@@ -217,14 +222,14 @@ function buildKeyboard() {
 }
 
 function renderKeyboard() {
-    const known = keyboardColors(board);
+    const known = keyboardColors(board, isWord);
     for (const [letter, button] of Object.entries(letterKeys)) {
         button.dataset.color = known[letter] ?? 'unknown';
         button.setAttribute('aria-label', known[letter] ? `${letter.toUpperCase()}, ${known[letter]}` : letter.toUpperCase());
     }
 }
 
-// After a mouse or touch click, drop focus from the button so a physical Enter submits the guess
+// After a mouse or touch click, drop focus from the button so typing and Backspace go to the board
 // instead of pressing that button again. Keyboard activation (detail 0) leaves focus where it is.
 document.addEventListener('click', event => {
     const button = event.target instanceof Element ? event.target.closest('button') : null;
@@ -237,15 +242,7 @@ document.addEventListener('keydown', event => {
     if (event.metaKey || event.ctrlKey || event.altKey || document.querySelector('dialog[open]')) {
         return;
     }
-    if (event.key === 'Enter') {
-        // Enter submits the guess, even from a focused tile, but still activates other buttons and links
-        const target = event.target instanceof Element ? event.target : null;
-        if (target?.closest('button, a, input, select') && !target.closest('.tile, .key')) {
-            return;
-        }
-        event.preventDefault();
-        submit();
-    } else if (event.key === 'Backspace') {
+    if (event.key === 'Backspace') {
         event.preventDefault();
         erase();
     } else if (/^[a-z]$/i.test(event.key)) {
@@ -260,6 +257,7 @@ const worker = new Worker('/js/worker.js', { type: 'module' });
 worker.addEventListener('message', ({ data }) => {
     if (data.type === 'ready') {
         words = new Set(data.words);
+        renderBoard();
         requestResults();
     } else if (data.type === 'results' && data.id === requestId) {
         clearTimeout(slowTimer);
@@ -278,7 +276,7 @@ function requestResults() {
         return;
     }
     requestId++;
-    worker.postMessage({ type: 'solve', id: requestId, guesses: submittedGuesses(board), hardMode: settings.hardMode });
+    worker.postMessage({ type: 'solve', id: requestId, guesses: guesses(board, isWord) });
     clearTimeout(slowTimer);
     slowTimer = setTimeout(() => document.body.classList.add('computing'), SLOW_MS);
 }
@@ -289,6 +287,7 @@ function showLoadError() {
     elements.bestWord.innerHTML = '&nbsp;';
     elements.bestDetail.textContent = "Couldn't load the word list. Check your connection and reload the page.";
     elements.useBest.disabled = true;
+    elements.moreGuesses.replaceChildren();
 }
 
 function formatPercent(probability) {
@@ -301,27 +300,55 @@ function formatRemaining(remaining) {
 
 function renderBest() {
     const { count, likely, best } = results;
-    const guesses = submittedGuesses(board);
+    const counted = guesses(board, isWord);
 
-    if (isSolved(board)) {
-        elements.bestWord.textContent = guesses.at(-1).word;
-        elements.bestDetail.textContent = `Solved in ${guesses.length}!`;
+    if (isSolved(board, isWord)) {
+        elements.bestWord.textContent = counted.at(-1).word;
+        elements.bestDetail.textContent = `Solved in ${counted.length}!`;
     } else if (!best) {
         elements.bestWord.innerHTML = '&nbsp;';
         elements.bestDetail.textContent = 'Fix the colors to get a suggestion.';
     } else {
         elements.bestWord.textContent = best.word;
-        if (guesses.length === 0) {
-            elements.bestDetail.textContent = `A strong opening: narrows ${count.toLocaleString()} words to ~${formatRemaining(best.expectedRemaining)}.`;
+        if (counted.length === 0) {
+            elements.bestDetail.textContent = `Strong opener: ${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`;
         } else if (count === 1) {
             elements.bestDetail.textContent = 'This is the only word left.';
         } else if (best.goForWin) {
-            elements.bestDetail.textContent = `Go for the win: ${formatPercent(likely[0].probability)} chance it's the answer.`;
+            elements.bestDetail.textContent = `Go for the win: ${formatPercent(likely[0].probability)} likely`;
         } else {
             elements.bestDetail.textContent = `${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`;
         }
     }
-    elements.useBest.disabled = activeRow(board) === -1 || !best || isSolved(board);
+    elements.useBest.disabled = activeRow(board) === -1 || !best || isSolved(board, isWord);
+    renderMoreGuesses();
+}
+
+function useWord(word, list, position) {
+    update(fillWord(board, word, isWord));
+    track('suggestion_clicked', { list, position });
+}
+
+// The rest of the top guesses, as chips that fill the next row
+function renderMoreGuesses() {
+    const others = isSolved(board, isWord) ? [] : results.guesses.slice(1);
+    if (others.length === 0) {
+        elements.moreGuesses.replaceChildren();
+        return;
+    }
+    const label = document.createElement('span');
+    label.className = 'more-label';
+    label.textContent = 'Also strong';
+    const chips = others.map(({ word }, i) => {
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'guess-chip';
+        chip.textContent = word;
+        chip.setAttribute('aria-label', `${word.toUpperCase()}. Add to board.`);
+        chip.addEventListener('click', () => useWord(word, 'guesses', i + 2));
+        return chip;
+    });
+    elements.moreGuesses.replaceChildren(label, ...chips);
 }
 
 function likelyItem({ word, probability }, position) {
@@ -332,24 +359,20 @@ function likelyItem({ word, probability }, position) {
     button.style.setProperty('--probability', `${Math.max(probability * 100, 1)}%`);
     button.innerHTML = `<span>${word.toUpperCase()}</span><span class="likely-percent">${formatPercent(probability)}</span>`;
     button.setAttribute('aria-label', `${word.toUpperCase()}, ${formatPercent(probability)} likely. Add to board.`);
-    button.addEventListener('click', () => {
-        update(fillWord(board, word));
-        track('suggestion_clicked', { position: position + 1 });
-    });
+    button.addEventListener('click', () => useWord(word, 'answers', position + 1));
     item.append(button);
     return item;
 }
 
 function renderLikely() {
     const { count, likely, contradiction } = results;
-    const guesses = submittedGuesses(board);
     listVersion++;
     elements.likelyList.replaceChildren();
     elements.showAll.hidden = true;
 
-    if (guesses.length === 0) {
+    if (guesses(board, isWord).length === 0) {
         elements.likelyCount.textContent = '';
-        elements.likelyMessage.textContent = 'Enter your first guess to see likely answers.';
+        elements.likelyMessage.textContent = 'Type your first guess to see likely answers.';
         return;
     }
     if (count === 0) {
@@ -390,8 +413,7 @@ function showAll() {
 function renderResults() {
     renderBest();
     renderLikely();
-    const guesses = submittedGuesses(board);
-    if (guesses.length > 0) {
+    if (guesses(board, isWord).length > 0) {
         elements.liveSummary.textContent = results.count === 0
             ? elements.likelyMessage.textContent
             : `${results.count.toLocaleString()} words left. Best guess: ${results.best.word.toUpperCase()}.`;
@@ -408,7 +430,6 @@ function applySettings() {
         root.dataset.theme = settings.theme;
     }
     root.classList.toggle('high-contrast', settings.highContrast);
-    elements.hardMode.checked = settings.hardMode;
     elements.theme.value = settings.theme;
     elements.highContrast.checked = settings.highContrast;
 }
@@ -419,15 +440,11 @@ function changeSettings(changes) {
     applySettings();
 }
 
-elements.hardMode.addEventListener('change', () => {
-    changeSettings({ hardMode: elements.hardMode.checked });
-    requestResults();
-});
 elements.theme.addEventListener('change', () => changeSettings({ theme: elements.theme.value }));
 elements.highContrast.addEventListener('change', () => changeSettings({ highContrast: elements.highContrast.checked }));
 
 // Closing a dialog returns focus to the button that opened it; after a mouse or touch click, drop it
-// again so Enter goes back to submitting guesses
+// again so typing goes back to the board
 function openDialog(dialog, event) {
     dialog.showModal();
     if (event.detail > 0) {
@@ -440,12 +457,10 @@ $('settings-button').addEventListener('click', event => openDialog($('settings-d
 
 $('new-game').addEventListener('click', () => update(createBoard()));
 elements.useBest.addEventListener('click', () => {
-    if (!results?.best) {
-        return;
+    if (results?.best) {
+        update(fillWord(board, results.best.word, isWord));
+        track('best_guess_used', { guess_number: guesses(board, isWord).length });
     }
-    const guessNumber = activeRow(board) + 1;
-    update(fillWord(board, results.best.word));
-    track('best_guess_used', { guess_number: guessNumber });
 });
 elements.showAll.addEventListener('click', showAll);
 
