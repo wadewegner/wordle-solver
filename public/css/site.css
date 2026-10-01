@@ -9,20 +9,20 @@
 
 :root {
     color-scheme: light dark;
-    --bg: light-dark(#f6f3ff, #120d27);
-    --surface: light-dark(#ffffff, #1d1640);
-    --surface-2: light-dark(#ece6ff, #2a2152);
-    --ink: light-dark(#1d1640, #f1ecff);
-    --muted: light-dark(#5b5480, #b0a7d6);
-    --border: light-dark(#d9d1f5, #3a2f6b);
-    --brand: light-dark(#5a2fc2, #9f7bff);
-    --brand-strong: light-dark(#3d1f8f, #c3abff);
-    --brand-ink: light-dark(#ffffff, #120d27);
+    --bg: light-dark(#f6f3ff, #2a1d5e);
+    --surface: light-dark(#ffffff, #372878);
+    --surface-2: light-dark(#ece6ff, #45348f);
+    --ink: light-dark(#1d1640, #f7f4ff);
+    --muted: light-dark(#5b5480, #d2c9f5);
+    --border: light-dark(#d9d1f5, #5a49a8);
+    --brand: light-dark(#6c3ce0, #c2a8ff);
+    --brand-strong: light-dark(#4b25b0, #e0d4ff);
+    --brand-ink: light-dark(#ffffff, #241852);
     --focus: #ff9e2c;
-    --tile-empty: light-dark(#ffffff, #1d1640);
-    --tile-border: light-dark(#cfc6ee, #4a3e80);
-    --key: light-dark(#e4ddfa, #3a2f6b);
-    --key-ink: light-dark(#1d1640, #f1ecff);
+    --tile-empty: light-dark(#ffffff, #33256f);
+    --tile-border: light-dark(#cfc6ee, #7564c4);
+    --key: light-dark(#e4ddfa, #503f9e);
+    --key-ink: light-dark(#1d1640, #f7f4ff);
     --gray: #787c7e;
     --yellow: #a68f2c;
     --green: #538d4e;
@@ -440,7 +440,7 @@ dialog {
     box-shadow: var(--shadow);
 }
 
-dialog::backdrop { background: rgb(18 13 39 / 0.55); }
+dialog::backdrop { background: rgb(30 20 70 / 0.55); }
 
 dialog h2 {
     margin: 0 2.5rem 1rem 0;
