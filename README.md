@@ -1,8 +1,8 @@
 # Wordle Wizard
 
-Wordle Wizard is an ASP.NET Blazor application that helps players solve the popular Wordle game by providing the most likely words based on the user's previous guesses and their corresponding color indications.
+Wordle Wizard is a static web app that helps players solve the popular Wordle game by providing the most likely words based on the user's previous guesses and their corresponding color indications.
 
-[Try it right now!](https://wordlesolver.herokuapp.com/)
+[Try it right now!](https://www.wordlewizard.com/)
 
 | Initial Screen  | After Submission |
 | --- | --- |
@@ -29,25 +29,27 @@ git clone https://github.com/wadewegner/wordle-solver.git
 cd wordle-solver
 ```
 
-3. Install the necessary packages and dependencies:
+3. Run the tests:
 
 ```bash
-dotnet restore
+npm test
 ```
 
-4. Build the project:
+4. Serve the site:
 
 ```bash
-dotnet build
+npm start
 ```
 
-5. Run the project:
+5. Open your browser and navigate to the URL printed by `serve` (usually `http://localhost:3000`) to start using the Wordle Wizard.
+
+## Deployment
+
+The site is hosted on [Netlify](https://www.netlify.com/), which serves the `public` directory (see `netlify.toml`). There's no build step; `npm test` runs as the build command, so a failing test blocks the deploy.
 
 ```bash
-dotnet run
+npx netlify-cli deploy --prod
 ```
-
-6. Open your browser and navigate to `http://localhost:<PORT>` to start using the Wordle Wizard.
 
 ## Usage
 

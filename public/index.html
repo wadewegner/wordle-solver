@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZL1VPX5V4V"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+
+        gtag('config', 'G-ZL1VPX5V4V');
+    </script>
+
+
+    <link rel="icon" type="image/png" href="/icons-wizard.png">
+
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Wordle Wizard</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/css/site.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+
+<body>
+
+    <div id="loadingOverlay" class="loading-overlay">
+        <img src="/wizard.png" alt="Wizard" width="25%">
+    </div>
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="navbar-brand" href="/">Wordle Wizard</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+                    <ul class="navbar-nav flex-grow-1">
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-dark" href="/privacy/">Privacy</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+
+            <div style="text-align: center;">
+
+                <h1 class="custom-h1">Wordle Wizard</h1>
+
+                <p>Boost your Wordle prowess with the Wordle Wizard! Solve puzzles effortlessly while still enjoying the
+                    challenge of choosing the next best word.</p>
+            </div>
+
+            <form id="wordleForm">
+                <div id="wordle-rows"></div>
+
+                <div id="keyboard-cont">
+                    <div class="first-row">
+                        <button class="btn keyboard-button" type="button">q</button>
+                        <button class="btn keyboard-button" type="button">w</button>
+                        <button class="btn keyboard-button" type="button">e</button>
+                        <button class="btn keyboard-button" type="button">r</button>
+                        <button class="btn keyboard-button" type="button">t</button>
+                        <button class="btn keyboard-button" type="button">y</button>
+                        <button class="btn keyboard-button" type="button">u</button>
+                        <button class="btn keyboard-button" type="button">i</button>
+                        <button class="btn keyboard-button" type="button">o</button>
+                        <button class="btn keyboard-button" type="button">p</button>
+                    </div>
+                    <div class="second-row">
+                        <button class="btn keyboard-button" type="button">a</button>
+                        <button class="btn keyboard-button" type="button">s</button>
+                        <button class="btn keyboard-button" type="button">d</button>
+                        <button class="btn keyboard-button" type="button">f</button>
+                        <button class="btn keyboard-button" type="button">g</button>
+                        <button class="btn keyboard-button" type="button">h</button>
+                        <button class="btn keyboard-button" type="button">j</button>
+                        <button class="btn keyboard-button" type="button">k</button>
+                        <button class="btn keyboard-button" type="button">l</button>
+                    </div>
+                    <div class="third-row">
+                        <button type="submit" class="btn btn-primary submit-button">Enter</button>
+                        <button class="btn keyboard-button" type="button">z</button>
+                        <button class="btn keyboard-button" type="button">x</button>
+                        <button class="btn keyboard-button" type="button">c</button>
+                        <button class="btn keyboard-button" type="button">v</button>
+                        <button class="btn keyboard-button" type="button">b</button>
+                        <button class="btn keyboard-button" type="button">n</button>
+                        <button class="btn keyboard-button" type="button">m</button>
+                        <button type="button" class="btn btn-danger clear-button" id="clearAllButton">Clear</button>
+                    </div>
+                </div>
+
+            </form>
+
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2023 - Wordle Wizard - <a href="/privacy/">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="/js/app.js"></script>
+    <script src="/js/overlay.js"></script>
+</body>
+
+</html>

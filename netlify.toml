@@ -1,0 +1,9 @@
+[build]
+  publish = "public"
+  command = "npm test"
+
+# The old ASP.NET app served the privacy page at /Privacy
+[[redirects]]
+  from = "/Privacy"
+  to = "/privacy/"
+  status = 301
