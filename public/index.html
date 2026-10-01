@@ -97,8 +97,9 @@
         <div class="results">
         <section class="card best" aria-labelledby="best-heading">
             <h2 id="best-heading">Best next guess</h2>
-            <p id="best-word" class="best-word">&nbsp;</p>
-            <p id="best-detail" class="best-detail">Loading the word list…</p>
+            <!-- The opening suggestion is in the HTML so it shows immediately; tests/data.test.js keeps it in sync with opening.json -->
+            <p id="best-word" class="best-word">raise</p>
+            <p id="best-detail" class="best-detail">Strong opener: 14,855 words → ~342 left</p>
             <button type="button" id="use-best" class="primary-button" disabled>Use this word</button>
             <div id="more-guesses" class="more-guesses" role="group" aria-label="Other strong guesses"></div>
         </section>

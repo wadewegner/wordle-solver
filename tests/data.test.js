@@ -54,3 +54,10 @@ test('opening.json holds the precomputed opening guesses', () => {
         assert.ok(guess.expectedRemaining > 0 && guess.expectedRemaining < 3000);
     }
 });
+
+test('index.html shows the precomputed opening suggestion before any script runs', () => {
+    const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
+    const [best] = JSON.parse(read('opening.json')).guesses;
+    assert.match(html, new RegExp(`<p id="best-word" class="best-word">${best.word}</p>`));
+    assert.match(html, new RegExp(`Strong opener: 14,855 words → ~${Math.round(best.expectedRemaining)} left`));
+});
