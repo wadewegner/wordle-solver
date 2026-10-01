@@ -304,10 +304,18 @@ function requestResults() {
 function showLoadError() {
     clearTimeout(slowTimer);
     document.body.classList.remove('computing');
-    elements.bestWord.innerHTML = '&nbsp;';
-    elements.bestDetail.textContent = "Couldn't load the word list. Check your connection and reload the page.";
+    setText(elements.bestWord, '\u00a0');
+    setText(elements.bestDetail, "Couldn't load the word list. Check your connection and reload the page.");
     elements.useBest.disabled = true;
     elements.moreGuesses.replaceChildren();
+}
+
+// Only touch the DOM when the text actually changes; rewriting identical text repaints it, which
+// delays the page's largest paint (the opening suggestion that's already in the HTML)
+function setText(element, text) {
+    if (element.textContent !== text) {
+        element.textContent = text;
+    }
 }
 
 function formatPercent(probability) {
@@ -334,23 +342,23 @@ function renderBest() {
     const counted = guesses(board, isWord);
 
     if (isSolved(board, isWord)) {
-        elements.bestWord.textContent = counted.at(-1).word;
-        elements.bestDetail.textContent = `Solved in ${counted.length}!`;
+        setText(elements.bestWord, counted.at(-1).word);
+        setText(elements.bestDetail, `Solved in ${counted.length}!`);
     } else if (!best) {
-        elements.bestWord.innerHTML = '&nbsp;';
-        elements.bestDetail.textContent = contradiction !== -1 ? contradictionHint() : 'Fix the colors to get a suggestion.';
+        setText(elements.bestWord, '\u00a0');
+        setText(elements.bestDetail, contradiction !== -1 ? contradictionHint() : 'Fix the colors to get a suggestion.');
     } else {
-        elements.bestWord.textContent = best.word;
+        setText(elements.bestWord, best.word);
         if (contradiction !== -1) {
-            elements.bestDetail.textContent = contradictionHint();
+            setText(elements.bestDetail, contradictionHint());
         } else if (counted.length === 0) {
-            elements.bestDetail.textContent = `Strong opener: ${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`;
+            setText(elements.bestDetail, `Strong opener: ${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`);
         } else if (count === 1) {
-            elements.bestDetail.textContent = 'This is the only word left.';
+            setText(elements.bestDetail, 'This is the only word left.');
         } else if (best.goForWin) {
-            elements.bestDetail.textContent = `Go for the win: ${formatPercent(likely[0].probability)} likely`;
+            setText(elements.bestDetail, `Go for the win: ${formatPercent(likely[0].probability)} likely`);
         } else {
-            elements.bestDetail.textContent = `${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`;
+            setText(elements.bestDetail, `${count.toLocaleString()} words → ~${formatRemaining(best.expectedRemaining)} left`);
         }
     }
     elements.useBest.disabled = activeRow(board) === -1 || !best || isSolved(board, isWord);
@@ -412,13 +420,13 @@ function renderLikely() {
     elements.showAll.hidden = true;
 
     if (likely.length === 0) {
-        elements.likelyCount.textContent = '';
-        elements.likelyMessage.textContent = contradiction !== -1 ? contradictionHint() : 'Type your first guess to see likely answers.';
+        setText(elements.likelyCount, '');
+        setText(elements.likelyMessage, contradiction !== -1 ? contradictionHint() : 'Type your first guess to see likely answers.');
         return;
     }
 
-    elements.likelyCount.textContent = `(${count.toLocaleString()})`;
-    elements.likelyMessage.textContent = contradiction !== -1 ? contradictionHint() : '';
+    setText(elements.likelyCount, `(${count.toLocaleString()})`);
+    setText(elements.likelyMessage, contradiction !== -1 ? contradictionHint() : '');
     elements.likelyList.append(...likely.slice(0, LIKELY_PREVIEW).map(likelyItem));
     if (count > LIKELY_PREVIEW) {
         elements.showAll.textContent = `Show all ${count.toLocaleString()}`;
