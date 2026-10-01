@@ -2,8 +2,18 @@
   publish = "public"
   command = "npm test"
 
+[build.environment]
+  NODE_VERSION = "22"
+
 # The old ASP.NET app served the privacy page at /Privacy
 [[redirects]]
   from = "/Privacy"
   to = "/privacy/"
   status = 301
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"

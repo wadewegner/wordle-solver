@@ -1,65 +1,53 @@
 # Wordle Wizard
 
-Wordle Wizard is a static web app that helps players solve the popular Wordle game by providing the most likely words based on the user's previous guesses and their corresponding color indications.
+Wordle Wizard helps you solve the daily NYT Wordle. Enter the guesses you've played and the colors Wordle showed, and it suggests the best next guess and the likeliest answers.
 
-[Try it right now!](https://www.wordlewizard.com/)
-
-| Initial Screen  | After Submission |
-| --- | --- |
-| <img src="./screenshot1.jpg" width="300"> | <img src="./screenshot2.jpg" width="300"> |
+[Try it at wordlewizard.com](https://www.wordlewizard.com/)
 
 ## Features
 
-- Allows users to enter their Wordle guesses and indicate their color (green, yellow, or dark grey) by double-clicking the letter.
-- Automatically suggests the top 10 most likely words based on the user's input history.
-- Users can insert a suggested word directly into an empty row with a single click.
-- Provides the option to clear a single row or clear all rows of input.
+- Type each Wordle guess and tap its letters to match Wordle's colors (gray, yellow, green). Suggestions update as you go.
+- **Best next guesses:** the ten possible answers expected to rule out the most of the others, best first.
+- **Likely answers:** every remaining word, ranked by how likely NYT is to pick it.
+- Suggestions are always possible answers, so they work in hard mode. Light and dark themes, a high-contrast option, and a board that's saved until the next puzzle.
 
-## Installation
+## How it works
 
-1. Clone the repository:
+The solver lives in `public/js/` and runs in a Web Worker:
 
-```bash
-git clone https://github.com/wadewegner/wordle-solver.git
-```
+- `wordle.js` scores guesses exactly like Wordle and filters the 14,855 accepted words to the ones that fit every row.
+- `rank.js` weights each word by how likely it is to be an answer and searches for the guess that splits the remaining answers most evenly.
+- `board.js` holds the board's rules; `app.js` is the page.
 
-2. Change the working directory:
-
-```bash
-cd wordle-solver
-```
-
-3. Run the tests:
+## Development
 
 ```bash
-npm test
+npm test            # unit tests (also the Netlify build command)
+npm start           # serve the site at http://localhost:3000
+npm run benchmark   # play every past NYT answer (-- --limit N for a quick run)
 ```
 
-4. Serve the site:
+Regenerating data:
 
 ```bash
-npm start
+python3 -m venv /tmp/wfvenv && /tmp/wfvenv/bin/pip install wordfreq
+/tmp/wfvenv/bin/python scripts/build-word-data.py   # original-answers.txt and common.txt
+npm run opening                                     # opening.json
+node bench/fetch-past-answers.js                    # refresh the benchmark fixture
+npx playwright screenshot --viewport-size=1200,630 "file://$PWD/scripts/og-image.html" public/img/og-image.png
 ```
 
-5. Open your browser and navigate to the URL printed by `serve` (usually `http://localhost:3000`) to start using the Wordle Wizard.
+## Data and credits
+
+- **Accepted words** (`public/data/words.txt`): the 14,855 words NYT Wordle accepts as guesses.
+- **Original answers** (`public/data/original-answers.txt`): the 2,315-word answer list from the original 2021 game, minus six words NYT removed.
+- **Word frequencies:** [wordfreq](https://github.com/rspeer/wordfreq) by Robyn Speer, [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+- **Display font:** [Cinzel](https://github.com/NDISCOVER/Cinzel), SIL Open Font License (`public/fonts/OFL.txt`).
+- Wordle Wizard isn't affiliated with The New York Times. Wordle is a trademark of The New York Times Company.
 
 ## Deployment
 
 The site is hosted on [Netlify](https://www.netlify.com/), which serves the `public` directory (see `netlify.toml`). Every push to `main` deploys to production. There's no build step; `npm test` runs as the build command, so a failing test blocks the deploy.
-
-## Usage
-
-1. Start a new game of Wordle (either on the official website or any other platform that offers the game).
-
-2. Input your Wordle guesses in the Wordle Wizard app, indicating their color by double-clicking the letter (green, yellow, or dark grey).
-
-3. Click the `Submit` button to get the next best guess based on your input history.
-
-4. If you want to use a suggested word, simply click on it, and it will be inserted into the next empty row.
-
-5. You can clear a single row by clicking the trash icon, or clear all rows by clicking the `Clear All` button.
-
-6. Repeat steps 2-5 until you have successfully guessed the Wordle word.
 
 ## Contributing
 

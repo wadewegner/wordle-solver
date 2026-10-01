@@ -2,6 +2,24 @@
 <html lang="en">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Wordle Wizard: Wordle Solver &amp; Best Next Guess</title>
+
+    <!-- Apply saved theme settings before the first paint to avoid a flash -->
+    <script>
+        try {
+            const settings = JSON.parse(localStorage.getItem('wordle-wizard-settings')) || {};
+            if (settings.theme === 'light' || settings.theme === 'dark') {
+                document.documentElement.dataset.theme = settings.theme;
+            }
+            if (settings.highContrast === true) {
+                document.documentElement.classList.add('high-contrast');
+            }
+        } catch {
+            // Storage unavailable; use the defaults
+        }
+    </script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZL1VPX5V4V"></script>
@@ -13,109 +31,160 @@
         gtag('config', 'G-ZL1VPX5V4V');
     </script>
 
-
-    <link rel="icon" type="image/png" href="/icons-wizard.png">
-
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Wordle Wizard</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/site.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <meta name="description" content="Wordle Wizard suggests the best next guess for today's Wordle and ranks the likeliest answers. Enter your guesses and colors to solve faster.">
+    <link rel="canonical" href="https://www.wordlewizard.com/">
+    <meta name="theme-color" content="#6c3ce0">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://www.wordlewizard.com/">
+    <meta property="og:title" content="Wordle Wizard: Wordle Solver &amp; Best Next Guess">
+    <meta property="og:description" content="Enter your Wordle guesses and colors. Get the best next guess and the likeliest answers.">
+    <meta property="og:image" content="https://www.wordlewizard.com/img/og-image.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="Wordle Wizard: the best next guess for today's Wordle">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "WebApplication",
+            "name": "Wordle Wizard",
+            "url": "https://www.wordlewizard.com/",
+            "description": "Suggests the best next guess for Wordle and ranks the likeliest answers.",
+            "applicationCategory": "GameApplication",
+            "operatingSystem": "Any",
+            "browserRequirements": "Requires JavaScript",
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+        }
+    </script>
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+    <link rel="preload" href="/fonts/cinzel-700-subset.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="/css/site.css">
+    <script type="module" src="/js/app.js"></script>
 </head>
 
 <body>
-
-    <div id="loadingOverlay" class="loading-overlay">
-        <img src="/wizard.png" alt="Wizard" width="25%">
-    </div>
-
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" href="/">Wordle Wizard</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/privacy/">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-
-            <div style="text-align: center;">
-
-                <h1 class="custom-h1">Wordle Wizard</h1>
-
-                <p>Boost your Wordle prowess with the Wordle Wizard! Solve puzzles effortlessly while still enjoying the
-                    challenge of choosing the next best word.</p>
-            </div>
-
-            <form id="wordleForm">
-                <div id="wordle-rows"></div>
-
-                <div id="keyboard-cont">
-                    <div class="first-row">
-                        <button class="btn keyboard-button" type="button">q</button>
-                        <button class="btn keyboard-button" type="button">w</button>
-                        <button class="btn keyboard-button" type="button">e</button>
-                        <button class="btn keyboard-button" type="button">r</button>
-                        <button class="btn keyboard-button" type="button">t</button>
-                        <button class="btn keyboard-button" type="button">y</button>
-                        <button class="btn keyboard-button" type="button">u</button>
-                        <button class="btn keyboard-button" type="button">i</button>
-                        <button class="btn keyboard-button" type="button">o</button>
-                        <button class="btn keyboard-button" type="button">p</button>
-                    </div>
-                    <div class="second-row">
-                        <button class="btn keyboard-button" type="button">a</button>
-                        <button class="btn keyboard-button" type="button">s</button>
-                        <button class="btn keyboard-button" type="button">d</button>
-                        <button class="btn keyboard-button" type="button">f</button>
-                        <button class="btn keyboard-button" type="button">g</button>
-                        <button class="btn keyboard-button" type="button">h</button>
-                        <button class="btn keyboard-button" type="button">j</button>
-                        <button class="btn keyboard-button" type="button">k</button>
-                        <button class="btn keyboard-button" type="button">l</button>
-                    </div>
-                    <div class="third-row">
-                        <button type="submit" class="btn btn-primary submit-button">Enter</button>
-                        <button class="btn keyboard-button" type="button">z</button>
-                        <button class="btn keyboard-button" type="button">x</button>
-                        <button class="btn keyboard-button" type="button">c</button>
-                        <button class="btn keyboard-button" type="button">v</button>
-                        <button class="btn keyboard-button" type="button">b</button>
-                        <button class="btn keyboard-button" type="button">n</button>
-                        <button class="btn keyboard-button" type="button">m</button>
-                        <button type="button" class="btn btn-danger clear-button" id="clearAllButton">Clear</button>
-                    </div>
-                </div>
-
-            </form>
-
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2023 - Wordle Wizard - <a href="/privacy/">Privacy</a>
+    <header class="site-header">
+        <a class="brand" href="/">
+            <img src="/img/logo.webp" alt="" width="40" height="52">
+            <span class="wordmark">Wordle Wizard</span>
+        </a>
+        <div class="header-actions">
+            <button type="button" class="icon-button" id="new-game" aria-label="New game" title="New game">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <button type="button" class="icon-button" id="help-button" aria-label="How it works" title="How it works">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.8-2.5 2.2-2.5 4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.2" fill="currentColor"/></svg>
+            </button>
+            <button type="button" class="icon-button" id="settings-button" aria-label="Settings" title="Settings">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="16" cy="7" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="10" cy="17" r="2.2" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+            </button>
         </div>
+    </header>
+
+    <main class="app">
+        <noscript><p class="noscript">Wordle Wizard needs JavaScript to suggest guesses.</p></noscript>
+
+        <div class="play">
+        <section class="board-area" aria-label="Your guesses">
+            <div id="board" class="board"></div>
+            <p id="board-message" class="board-message" role="status"></p>
+        </section>
+
+        <div id="keyboard" class="keyboard" role="group" aria-label="Keyboard"></div>
+        </div>
+
+        <div class="results">
+        <section class="card best" aria-labelledby="best-heading">
+            <h2 id="best-heading">Best next guess</h2>
+            <!-- The opening suggestion is in the HTML so it shows immediately; tests/data.test.js keeps it in sync with opening.json -->
+            <p id="best-word" class="best-word">raise</p>
+            <p id="best-detail" class="best-detail">Strong opener: 14,855 words → ~342 left</p>
+            <button type="button" id="use-best" class="primary-button" disabled>Use this word</button>
+            <div id="more-guesses" class="more-guesses" role="group" aria-label="Other strong guesses"></div>
+        </section>
+
+        <section class="card likely" aria-labelledby="likely-heading">
+            <h2 id="likely-heading">Likely answers <span id="likely-count"></span></h2>
+            <p id="likely-message" class="likely-message">Type your first guess to see likely answers.</p>
+            <ol id="likely-list" class="likely-list"></ol>
+            <button type="button" id="show-all" class="text-button" hidden></button>
+        </section>
+        </div>
+    </main>
+
+    <p id="live-summary" class="visually-hidden" aria-live="polite"></p>
+
+    <section class="faq" aria-labelledby="faq-title">
+        <h2 id="faq-title">How Wordle Wizard works</h2>
+        <details open>
+            <summary>How do I use it?</summary>
+            <p>Play your guess in Wordle, then type the same word here. Tap each letter until it shows the color Wordle gave it: gray for letters not in the word, yellow for letters in the word but in the wrong spot, and green for letters in the right spot. Suggestions update as you type and tap.</p>
+        </details>
+        <details>
+            <summary>What does the best next guess mean?</summary>
+            <p>It's the possible answer expected to rule out the most of the others, whatever colors Wordle shows you. Wordle Wizard tries each likely answer against every word that's still possible and picks the one that splits them most evenly, then shows how many words you can expect to have left. The chips next to it are the runners-up. When one answer is very likely, it suggests going for the win.</p>
+        </details>
+        <details>
+            <summary>How are likely answers ranked?</summary>
+            <p>Wordle accepts 14,855 words as guesses, but most answers come from a much smaller list of common words. Words from Wordle's original answer list rank highest, other common English words come next, and obscure words come last. The percentages show how likely each remaining word is to be the answer.</p>
+        </details>
+        <details>
+            <summary>Does it work with hard mode?</summary>
+            <p>Yes. Every suggestion is a word that could still be the answer, so it always keeps your green letters in place and uses your yellow letters, as Wordle's hard mode requires.</p>
+        </details>
+        <details>
+            <summary>Where do the words come from?</summary>
+            <p>The 14,855 accepted words match the list in The New York Times' Wordle game. Word frequencies come from <a href="https://github.com/rspeer/wordfreq">wordfreq</a> by Robyn Speer, used under the <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a> license.</p>
+        </details>
+        <details>
+            <summary>Is this the official Wordle?</summary>
+            <p>No. Wordle Wizard is an independent helper and isn't affiliated with The New York Times. Wordle is a trademark of The New York Times Company.</p>
+        </details>
+    </section>
+
+    <footer class="site-footer">
+        <p>&copy; 2026 Wordle Wizard &middot; Not affiliated with The New York Times. &middot; <a href="/privacy/">Privacy</a></p>
     </footer>
 
-    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script type="module" src="/js/app.js"></script>
-    <script src="/js/overlay.js"></script>
+    <dialog id="help-dialog" aria-labelledby="help-title">
+        <form method="dialog">
+            <button class="icon-button dialog-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </button>
+        </form>
+        <h2 id="help-title">How it works</h2>
+        <ol class="help-steps">
+            <li><strong>Type the word you played in Wordle.</strong> Keep typing and the next guess starts on the next row.</li>
+            <li><strong>Tap each letter until it matches Wordle's colors:</strong>
+                <span class="mini-tile" data-color="gray">A</span> not in the word,
+                <span class="mini-tile" data-color="yellow">B</span> in the word but in the wrong spot,
+                <span class="mini-tile" data-color="green">C</span> in the right spot.</li>
+            <li><strong>Check the suggestions.</strong> They update as you type and tap. The best next guess narrows down the possible answers fastest, and likely answers are ranked by how likely each one is to be today's word.</li>
+        </ol>
+        <p>Tap any suggestion to add it to the board. Every suggestion could still be the answer, so they work in hard mode too.</p>
+    </dialog>
+
+    <dialog id="settings-dialog" aria-labelledby="settings-title">
+        <form method="dialog">
+            <button class="icon-button dialog-close" aria-label="Close">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </button>
+        </form>
+        <h2 id="settings-title">Settings</h2>
+        <label class="setting">
+            <span><strong>Theme</strong></span>
+            <select id="theme">
+                <option value="system">Match device</option>
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+            </select>
+        </label>
+        <label class="setting">
+            <span><strong>High contrast colors</strong><small>Orange and blue instead of green and yellow.</small></span>
+            <input type="checkbox" id="high-contrast">
+        </label>
+    </dialog>
 </body>
 
 </html>

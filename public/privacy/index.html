@@ -2,6 +2,21 @@
 <html lang="en">
 
 <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Privacy Policy · Wordle Wizard</title>
+    <meta name="description" content="How Wordle Wizard handles your data: Google Analytics for usage statistics, and your board saved only in your browser.">
+    <link rel="canonical" href="https://www.wordlewizard.com/privacy/">
+    <script>
+        try {
+            const settings = JSON.parse(localStorage.getItem('wordle-wizard-settings')) || {};
+            if (settings.theme === 'light' || settings.theme === 'dark') {
+                document.documentElement.dataset.theme = settings.theme;
+            }
+        } catch {
+            // Storage unavailable; use the defaults
+        }
+    </script>
 
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZL1VPX5V4V"></script>
@@ -13,84 +28,46 @@
         gtag('config', 'G-ZL1VPX5V4V');
     </script>
 
-
-    <link rel="icon" type="image/png" href="/icons-wizard.png">
-
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Privacy Policy</title>
-    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="/css/site.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32">
+    <link rel="apple-touch-icon" href="/img/apple-touch-icon.png">
+    <link rel="stylesheet" href="/css/site.css">
 </head>
 
 <body>
-
-    <div id="loadingOverlay" class="loading-overlay">
-        <img src="/wizard.png" alt="Wizard" width="25%">
-    </div>
-
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container">
-                <a class="navbar-brand" href="/">Wordle Wizard</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" href="/privacy/">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
+    <header class="site-header">
+        <a class="brand" href="/">
+            <img src="/img/logo.webp" alt="" width="40" height="52">
+            <span class="wordmark">Wordle Wizard</span>
+        </a>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            <div style="text-align: center;">
-                <h1>Privacy Policy</h1>
-            </div>
 
+    <main class="page">
+        <h1>Privacy Policy</h1>
+        <p>Last updated: October 1, 2026</p>
 
-            <p>Last updated: April 8, 2023</p>
+        <p>Wordle Wizard doesn't ask for, collect, or store personal information. It uses Google Analytics to understand how many people use the site and how they use it.</p>
 
-            <p>We value your privacy and are committed to protecting your personal information. This Privacy Policy provides information about how we handle your data and uphold your privacy rights.</p>
+        <h2>Google Analytics</h2>
+        <p>When you visit, Google Analytics collects usage data such as the pages you view, how long you stay, the site that referred you, your device and browser type, and your approximate location based on your IP address. It also records a few anonymous actions, such as entering a guess or using a suggestion. These record only counts and positions, never the words you enter.</p>
+        <p>Google Analytics sets cookies named <code>_ga</code> and <code>_ga_ZL1VPX5V4V</code> that last up to two years and let it recognize returning visitors. Google processes this data under its own policies: see <a href="https://policies.google.com/privacy">Google's Privacy Policy</a> and <a href="https://policies.google.com/technologies/partner-sites">how Google uses information from sites that use its services</a>.</p>
+        <p>You can opt out with the <a href="https://tools.google.com/dlpage/gaoptout">Google Analytics opt-out browser add-on</a>, by blocking cookies in your browser, or with a content blocker.</p>
 
-            <p>1. No Collection or Storage of Personal Information</p>
+        <h2>Saved in your browser</h2>
+        <p>Your current board and your settings (theme and high contrast) are saved in your browser's local storage so they survive a reload. They never leave your device. The board resets each day, and "New game" or clearing your browser's site data removes it.</p>
 
-            <p>We do not collect, store, or process any personal information from our users. Our website and services are designed to function without requiring any personal data from you.</p>
+        <h2>Sharing</h2>
+        <p>Wordle Wizard has no accounts and doesn't sell or share data. The only third party involved is Google, through Google Analytics as described above.</p>
 
-            <p>2. No Use of Cookies</p>
+        <h2>Changes</h2>
+        <p>If this policy changes, the new version will be posted on this page with a new "Last updated" date.</p>
 
-            <p>Our website does not use cookies or any other tracking technologies to collect or store information about your browsing activities or preferences.</p>
+        <h2>Contact</h2>
+        <p>Questions? <a href="https://github.com/wadewegner/wordle-solver/issues">Open an issue on GitHub</a>.</p>
+    </main>
 
-            <p>3. No Sharing of Information with Third Parties</p>
-
-            <p>As we do not collect or store any personal information, we do not share your data with any third parties.</p>
-
-            <p>4. Changes to This Privacy Policy</p>
-
-            <p>We reserve the right to update our Privacy Policy from time to time. Any changes will be posted on this page, and the "Last updated" date at the top of this Privacy Policy will be revised. It is your responsibility to review this Privacy Policy periodically for any changes.</p>
-
-            <p>By using our website and services, you agree to the terms outlined in this Privacy Policy.</p>
-
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2023 - Wordle Wizard - <a href="/privacy/">Privacy</a>
-        </div>
+    <footer class="site-footer">
+        <p>&copy; 2026 Wordle Wizard &middot; Not affiliated with The New York Times. &middot; <a href="/">Home</a></p>
     </footer>
-
-    <script src="/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="/js/overlay.js"></script>
 </body>
 
 </html>
