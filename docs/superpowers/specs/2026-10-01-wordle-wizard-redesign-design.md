@@ -103,7 +103,7 @@ Every one of the 14,855 words can be an answer, but each has a static weight:
 | Tier | Contents | Starting weight |
 |---|---|---|
 | A | `original-answers.txt` (2,309) | 1.0 |
-| B | `common.txt`: other words with wordfreq Zipf frequency ≥ 3.0 | 0.1 |
+| B | `common.txt`: other words with wordfreq Zipf frequency ≥ 2.0 that aren't a plural or past tense of a common shorter word | 0.1 |
 | C | everything else | 0.001 |
 
 The Tier B threshold and the tier weights are tuned with the benchmark before launch.
@@ -120,7 +120,7 @@ The best guess maximizes expected information. For a guess *g*, group the candid
 
 **Going for the win.** If two or fewer candidates remain, or the top candidate's probability is at least 0.5, the best guess is the most likely candidate.
 
-**Guess pool.** The pool is all candidates plus the top 2,000 words by a quick heuristic: the summed weight of candidates containing each of the word's distinct letters. That keeps the work to roughly pool × candidates pattern computations.
+**Guess pool.** The pool is sized to a budget of about 1.5 million pattern computations: up to 1,500,000 ÷ candidates words, but never fewer than 200. The pool is the top words by a quick heuristic (for each distinct letter, how evenly it splits the candidates' weight), plus the 200 likeliest candidates. With few candidates this covers the whole dictionary.
 
 **Expected effect.** This is the probability-weighted average of the candidate count in each pattern group. It's shown as "578 → ~19 left".
 
@@ -161,8 +161,8 @@ Each key shows the best state known for its letter (green beats yellow beats gra
 ### Visual identity
 
 - **Palette:** deep indigo and purple, with light and dark themes. The theme follows `prefers-color-scheme` and can be changed manually.
-- **Tiles:** Wordle colors with white letters: green `#6aaa64`, yellow `#c9b458`, gray `#787c7e`.
-- **High-contrast setting:** orange `#f5793a` and blue `#85c0f9`, as in Wordle.
+- **Tiles:** Wordle hues with white letters, darkened just enough to meet WCAG AA for large text: green `#538d4e`, yellow `#a68f2c`, gray `#787c7e`. Wordle's exact light-mode yellow `#c9b458` fails AA with white letters.
+- **High-contrast setting:** orange `#e2652a` and blue `#3d7fc4`. These are Wordle's high-contrast hues, adjusted for AA.
 - **Type:** one display typeface for the wordmark and the best-guess word. System UI fonts everywhere else.
 - **Logo:** the wizard image, optimized to a small logo. There's no splash screen.
 
@@ -269,5 +269,4 @@ Done during development with Playwright:
 ## Open items for the implementation plan
 
 - The specific display typeface (OFL) and exact palette values. Chosen during implementation, within the identity above.
-- The Tier B threshold and the tier weights. They start at the values above and are tuned with the benchmark.
-- Whether `wordfreq` installs cleanly. If not, use another openly licensed frequency source and credit it.
+- The Tier B threshold and the tier weights. They start at the values above (a cutoff of 2.0 catches 56 of the 62 past answers that came from outside the original list; 3.0 would catch only 18) and are tuned with the benchmark.
