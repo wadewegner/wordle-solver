@@ -372,7 +372,7 @@ test('encodeColors and decodePattern round-trip', () => {
 test('scorePattern matches Wordle, including repeated letters', () => {
     const cases = [
         ['crane', 'crane', 'ggggg'],
-        ['crane', 'mulch', '.....'],
+        ['crane', 'pious', '.....'],
         ['speed', 'abide', '..y.y'],
         ['eerie', 'there', 'y.y.g'],
         ['geese', 'sheep', '.ygy.'],
@@ -962,7 +962,7 @@ Add scripts to `package.json` so the `scripts` block reads:
 
 ```json
   "scripts": {
-    "start": "npx serve public",
+    "start": "npx -y serve public",
     "test": "node --test tests/*.test.js",
     "benchmark": "node bench/benchmark.js",
     "opening": "node scripts/opening.js"

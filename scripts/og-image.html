@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- Template for public/img/og-image.png (1200x630). See README for the screenshot command. -->
+<head>
+    <meta charset="utf-8">
+    <style>
+        @font-face { font-family: 'Cinzel'; src: url('../public/fonts/cinzel-700-subset.woff2') format('woff2'); font-weight: 700; }
+        body {
+            margin: 0; width: 1200px; height: 630px; box-sizing: border-box;
+            display: flex; align-items: center; gap: 56px; padding: 0 80px;
+            background: radial-gradient(circle at 80% 15%, #7b4fe0 0, #3d1f8f 45%, #160f33 100%);
+            color: #ffffff; font-family: system-ui, sans-serif;
+        }
+        img { height: 480px; }
+        h1 { margin: 0 0 16px; font: 700 88px/1 'Cinzel', serif; letter-spacing: 0.02em; }
+        p { margin: 0 0 40px; color: #e6dcff; font-size: 36px; }
+        .tiles { display: flex; gap: 12px; }
+        .tiles span { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 10px; font: 700 48px system-ui, sans-serif; }
+    </style>
+</head>
+<body>
+    <img src="../assets/wizard.png" alt="">
+    <div>
+        <h1>Wordle Wizard</h1>
+        <p>The best next guess for today's Wordle</p>
+        <div class="tiles">
+            <span style="background:#538d4e">M</span><span style="background:#787c7e">A</span><span style="background:#a68f2c">G</span><span style="background:#538d4e">I</span><span style="background:#538d4e">C</span>
+        </div>
+    </div>
+</body>
+</html>
