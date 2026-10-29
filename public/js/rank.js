@@ -143,9 +143,8 @@ export function bestGuess(candidates, lexicon, options = {}) {
 }
 
 // rows: [{ word, pattern }]. Everything the results panel shows. With no rows, the precomputed
-// opening guesses stand in for a search over all 14,855 words. When no word fits every row,
-// `contradiction` names the first row that doesn't fit and the rest describes the rows before it,
-// so the panel still has suggestions while the player fixes the colors.
+// opening guesses stand in for a search over all 14,855 words. When no word fits every row, nothing
+// is left to suggest, and `contradiction` names the first row after which no word fits.
 export function solve(lexicon, rows, { opening = [] } = {}) {
     if (rows.length === 0) {
         return { count: lexicon.words.length, likely: [], best: opening[0] ?? null, guesses: opening, contradiction: -1 };
@@ -153,8 +152,7 @@ export function solve(lexicon, rows, { opening = [] } = {}) {
 
     const candidates = filterCandidates(lexicon.words, rows);
     if (candidates.length === 0) {
-        const contradiction = findContradiction(lexicon.words, rows);
-        return { ...solve(lexicon, rows.slice(0, contradiction), { opening }), contradiction };
+        return { count: 0, likely: [], best: null, guesses: [], contradiction: findContradiction(lexicon.words, rows) };
     }
 
     const guesses = topGuesses(candidates, lexicon);
