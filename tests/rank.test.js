@@ -88,14 +88,17 @@ test('solve with no rows returns the opening guesses', () => {
     assert.deepEqual(solve(lexicon, [], { opening }), { count: 14855, likely: [], best: opening[0], guesses: opening, contradiction: -1 });
 });
 
-test('solve reports a contradiction and keeps the suggestions from the rows before it', () => {
-    const before = solve(lexicon, [row('crane', '.y...')]);
-    const result = solve(lexicon, [row('crane', '.y...'), row('slate', 'ggggg'), row('pious', 'ggggg')]);
-    assert.equal(result.contradiction, 1);
-    assert.deepEqual({ ...result, contradiction: -1 }, before);
+test('solve reports a contradiction with no words left and nothing to suggest', () => {
+    const none = { count: 0, likely: [], best: null, guesses: [] };
+    assert.deepEqual(solve(lexicon, [row('crane', '.y...'), row('slate', 'ggggg'), row('pious', 'ggggg')]), { ...none, contradiction: 1 });
 
     const opening = [{ word: 'raise', expectedRemaining: 342, goForWin: false }];
-    assert.deepEqual(solve(lexicon, [row('speed', '...y.')], { opening }), { ...solve(lexicon, [], { opening }), contradiction: 0 });
+    assert.deepEqual(solve(lexicon, [row('speed', '...y.')], { opening }), { ...none, contradiction: 0 });
+
+    // Running out of words after earlier rows narrowed the list down
+    const rows = [row('crane', '.....'), row('sloth', '.....'), row('dumpy', '.....')];
+    assert.ok(solve(lexicon, rows).count > 0);
+    assert.deepEqual(solve(lexicon, [...rows, row('fight', '.....')]), { ...none, contradiction: 3 });
 });
 
 test('solve returns every candidate ranked, with a best guess', () => {

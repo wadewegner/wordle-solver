@@ -326,7 +326,7 @@ function formatRemaining(remaining) {
     return remaining < 10 ? remaining.toFixed(1) : Math.round(remaining).toLocaleString();
 }
 
-// When no word fits every row, the suggestions shown come from the rows before the one that doesn't fit
+// When no word fits every row, there are no words left; this says which row to check
 function contradictionHint() {
     const { contradiction } = results;
     if (contradiction === guesses(board, isWord).length - 1) {
@@ -420,7 +420,7 @@ function renderLikely() {
     elements.showAll.hidden = true;
 
     if (likely.length === 0) {
-        setText(elements.likelyCount, '');
+        setText(elements.likelyCount, contradiction !== -1 ? '(0)' : '');
         setText(elements.likelyMessage, contradiction !== -1 ? contradictionHint() : 'Type your first guess to see likely answers.');
         return;
     }
@@ -456,7 +456,9 @@ function renderResults() {
     renderBest();
     renderLikely();
     if (guesses(board, isWord).length > 0) {
-        elements.liveSummary.textContent = results.contradiction !== -1 || !results.best
+        elements.liveSummary.textContent = results.contradiction !== -1
+            ? `0 words left. ${elements.bestDetail.textContent}`
+            : !results.best
             ? elements.bestDetail.textContent
             : `${results.count.toLocaleString()} words left. Best guess: ${results.best.word.toUpperCase()}.`;
     }
